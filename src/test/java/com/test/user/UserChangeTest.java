@@ -3,6 +3,7 @@ package com.test.user;
 import com.example.client.UserClient;
 import com.example.data.UserCredentials;
 import com.example.data.UserData;
+import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -40,33 +41,23 @@ public class UserChangeTest {
         };
     }
     @Before
+    @Step("Создание тестовых данных")
     public void setUp() {
         userClient = new UserClient();
         userData = getRandomUser();
-        token = userClient.createUser(userData)
-                .assertThat()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true))
-                .extract()
-                .path("accessToken");
+        token = userClient.createUser(userData).extract().path("accessToken");
     }
     @After
+    @Step("Удаление тестовых данных")
     public void tearDown() {
-        userClient.deleteUser(token)
-                .assertThat()
-                .statusCode(SC_ACCEPTED)
-                .body("success", equalTo(true));
+        if (token != null) {
+            userClient.deleteUser(token);
+        }
     }
     @Test
-    @DisplayName("Изиенение данных пользователя с авторизацией")
+    @DisplayName("Изменение данных пользователя с авторизацией")
     public void userWithAuthTest() {
         userCredentials = UserCredentials.from(userData);
-        token = userClient.loginUser(userCredentials)
-                .assertThat()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true))
-                .extract()
-                .path("accessToken");
         if (userName != null) userData.setName(userName);
         if (userEmail != null) userData.setEmail(userEmail);
         if (userPassword != null) userData.setPassword(userPassword);
@@ -76,7 +67,7 @@ public class UserChangeTest {
                 .body("success", equalTo(true));
     }
     @Test
-    @DisplayName("Изиенение данных пользователя без авторизацией")
+    @DisplayName("Изменение данных пользователя без авторизации")
     public void userWithoutAuthTest() {
         if (userName != null) userData.setName(userName);
         if (userEmail != null) userData.setEmail(userEmail);

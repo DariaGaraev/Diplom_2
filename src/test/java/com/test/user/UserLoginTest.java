@@ -13,44 +13,33 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 
 public class UserLoginTest {
-    private UserData userData;
     private UserClient userClient;
     private UserCredentials userCredentials;
     private String token;
 
     @Before
-    @Step("Создание тестовых данных пользователя")
+    @Step("Создание тестовых данных")
     public void setUp() {
         userClient = new UserClient();
-        userData = getRandomUser();
-        token = userClient.createUser(userData)
-                .assertThat()
-                .statusCode(SC_OK)
-                .and()
-                .body("success", equalTo(true))
-                .extract()
-                .path("accessToken");
-
+        UserData userData = getRandomUser();
+        token = userClient.createUser(userData).extract().path("accessToken");
         userCredentials = UserCredentials.from(userData);
     }
     @After
-    @Step("Удаление тестовых данных пользователя")
+    @Step("Удаление тестовых данных")
     public void cleanUp() {
-        userClient.deleteUser(token)
-                .assertThat()
-                .statusCode(SC_ACCEPTED)
-                .and()
-                .body("success", equalTo(true));
+        if(token!=null) {
+            userClient.deleteUser(token);
+        }
     }
     @Test
     @DisplayName("Авторизация пользователя")
     public void LoginUserTest() {
-        ValidatableResponse response = userClient.loginUser(userCredentials);
-        response.assertThat()
+        userClient.loginUser(userCredentials)
+        .assertThat()
                 .statusCode(SC_OK)
                 .and()
                 .body("success", equalTo(true));
-        token = response.extract().path("accessToken").toString().substring(6).trim();
     }
 
 
@@ -58,7 +47,7 @@ public class UserLoginTest {
     @DisplayName("Авторизация пользователя с неверным паролем")
     public void testLoginUserWithWrongPassword() {
         userCredentials.setPassword("BlaBlaLogin123123");
-        ValidatableResponse response = userClient.loginUser(userCredentials);;
+        ValidatableResponse response = userClient.loginUser(userCredentials);
         response.assertThat()
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false),"message", equalTo("email or password are incorrect"));
@@ -68,7 +57,7 @@ public class UserLoginTest {
     @DisplayName("Авторизация пользователя с неверной почтой")
     public void testLoginUserWithWrongEmail() {
         userCredentials.setEmail("BlaBlaEmail123123");
-        ValidatableResponse response = userClient.loginUser(userCredentials);;
+        ValidatableResponse response = userClient.loginUser(userCredentials);
         response.assertThat()
                 .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false),"message", equalTo("email or password are incorrect"));

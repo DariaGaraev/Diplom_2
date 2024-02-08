@@ -9,9 +9,10 @@ import static io.restassured.RestAssured.given;
 
 public class OrderClient extends RestClient  {
     private static final String PATH_ORDER = "api/orders/";
-    @Step("Создание заказа безх авторизации")
+    @Step("Создание заказа без авторизации")
     public ValidatableResponse createWithoutAuthorization(OrderData ingredients) {
         return given()
+                .header("Content-type", "application/json")
                 .spec(requestSpecification())
                 .body(ingredients)
                 .when()
@@ -21,6 +22,7 @@ public class OrderClient extends RestClient  {
     @Step("Создание заказа с авторизацией")
     public ValidatableResponse createWithAuthorization(OrderData ingredients, String token) {
         return given()
+                .header("Content-type", "application/json")
                 .header("Authorization", token)
                 .spec(requestSpecification())
                 .body(ingredients)
@@ -39,9 +41,10 @@ public class OrderClient extends RestClient  {
                 .then();
     }
 
-    @Step("Получение заказа без авторизацией")
+    @Step("Получение заказа без авторизации")
     public ValidatableResponse getWithoutAuthorization() {
         return given()
+                .header("Content-type", "application/json")
                 .spec(requestSpecification())
                 .when()
                 .get(PATH_ORDER)
